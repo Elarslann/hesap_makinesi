@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesap Makinesi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Auth Styles */
+        .auth-container {
+            padding: 40px 30px;
+        }
+
+        .auth-container h2 {
+            text-align: center;
+            color: #1a1a2e;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .auth-container .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0f3460;
+            box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(15, 52, 96, 0.4);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+        }
+
+        .auth-switch a {
+            color: #0f3460;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background: #e6ffe6;
+            color: #27ae60;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        /* Calculator Styles */
+        .calculator-container {
+            display: none;
+        }
+
+        .calc-header {
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calc-header h3 {
+            font-size: 18px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-email {
+            font-size: 12px;
+            opacity: 0.8;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .display {
+            background: #1a1a2e;
+            padding: 25px 20px;
+        }
+
+        .display-expression {
+            color: #888;
+            font-size: 16px;
+            text-align: right;
+            min-height: 24px;
+            word-break: break-all;
+        }
+
+        .display-result {
+            color: white;
+            font-size: 42px;
+            text-align: right;
+            font-weight: 300;
+            margin-top: 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: #e0e0e0;
+            padding: 1px;
+        }
+
+        .key {
+            background: white;
+            border: none;
+            padding: 22px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .key:hover {
+            background: #f5f5f5;
+        }
+
+        .key:active {
+            background: #e8e8e8;
+            transform: scale(0.98);
+        }
+
+        .key.operator {
+            background: #e8f4f8;
+            color: #0f3460;
+            font-weight: 600;
+        }
+
+        .key.operator:hover {
+            background: #d4ebf2;
+        }
+
+        .key.equals {
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            color: white;
+            font-weight: 600;
+        }
+
+        .key.equals:hover {
+            background: linear-gradient(135deg, #16213e, #1a1a2e);
+        }
+
+        .key.clear {
+            background: #ffe6e6;
+            color: #d63031;
+            font-weight: 600;
+        }
+
+        .key.clear:hover {
+            background: #ffd4d4;
+        }
+
+        .key.backspace {
+            background: #fff3e6;
+            color: #e67e22;
+        }
+
+        .key.backspace:hover {
+            background: #ffe8d4;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 420px) {
+            .container {
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .key {
+                padding: 18px;
+                font-size: 20px;
+            }
+
+            .display-result {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Kayıt Formu -->
+        <div class="auth-container" id="registerForm">
+            <h2>📝 Kayıt Ol</h2>
+            <p class="subtitle">Hesap makinesi kullanmak için kayıt olun</p>
+            
+            <div class="error-message" id="registerError"></div>
+            <div class="success-message" id="registerSuccess"></div>
+            
+            <form onsubmit="register(event)">
+                <div class="form-group">
+                    <label for="regEmail">E-posta Adresi</label>
+                    <input type="email" id="regEmail" placeholder="ornek@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Şifre</label>
+                    <input type="password" id="regPassword" placeholder="En az 6 karakter" minlength="6" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPasswordConfirm">Şifre Tekrar</label>
+                    <input type="password" id="regPasswordConfirm" placeholder="Şifrenizi tekrar girin" required>
+                </div>
+                <button type="submit" class="auth-btn">Kayıt Ol</button>
+            </form>
+            
+            <p class="auth-switch">
+                Zaten hesabınız var mı? <a onclick="showLogin()">Giriş Yapın</a>
+            </p>
+        </div>
+
+        <!-- Giriş Formu -->
+        <div class="auth-container hidden" id="loginForm">
+            <h2>🔐 Giriş Yap</h2>
+            <p class="subtitle">Hesabınıza giriş yapın</p>
+            
+            <div class="error-message" id="loginError"></div>
+            
+            <form onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="loginEmail">E-posta Adresi</label>
+                    <input type="email" id="loginEmail" placeholder="ornek@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Şifre</label>
+                    <input type="password" id="loginPassword" placeholder="Şifrenizi girin" required>
+                </div>
+                <button type="submit" class="auth-btn">Giriş Yap</button>
+            </form>
+            
+            <p class="auth-switch">
+                Hesabınız yok mu? <a onclick="showRegister()">Kayıt Olun</a>
+            </p>
+        </div>
+
+        <!-- Hesap Makinesi -->
+        <div class="calculator-container" id="calculator">
+            <div class="calc-header">
+                <h3>🧮 Hesap Makinesi</h3>
+                <div class="user-info">
+                    <span class="user-email" id="currentUserEmail"></span>
+                    <button class="logout-btn" onclick="logout()">Çıkış</button>
+                </div>
+            </div>
+            
+            <div class="display">
+                <div class="display-expression" id="expression"></div>
+                <div class="display-result" id="result">0</div>
+            </div>
+            
+            <div class="keypad">
+                <button class="key clear" onclick="clearAll()">C</button>
+                <button class="key backspace" onclick="backspace()">⌫</button>
+                <button class="key operator" onclick="appendOperator('/')">÷</button>
+                <button class="key operator" onclick="appendOperator('*')">×</button>
+                
+                <button class="key" onclick="appendNumber('7')">7</button>
+                <button class="key" onclick="appendNumber('8')">8</button>
+                <button class="key" onclick="appendNumber('9')">9</button>
+                <button class="key operator" onclick="appendOperator('-')">−</button>
+                
+                <button class="key" onclick="appendNumber('4')">4</button>
+                <button class="key" onclick="appendNumber('5')">5</button>
+                <button class="key" onclick="appendNumber('6')">6</button>
+                <button class="key operator" onclick="appendOperator('+')">+</button>
+                
+                <button class="key" onclick="appendNumber('1')">1</button>
+                <button class="key" onclick="appendNumber('2')">2</button>
+                <button class="key" onclick="appendNumber('3')">3</button>
+                <button class="key equals" onclick="calculate()" style="grid-row: span 2;">＝</button>
+                
+                <button class="key" onclick="appendNumber('0')" style="grid-column: span 2;">0</button>
+                <button class="key" onclick="appendDecimal()">.</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Uygulama Durumu
+        let currentInput = '0';
+        let previousInput = '';
+        let operation = null;
+        let shouldResetScreen = false;
+
+        // DOM Elementleri
+        const registerForm = document.getElementById('registerForm');
+        const loginForm = document.getElementById('loginForm');
+        const calculator = document.getElementById('calculator');
+        const expressionDisplay = document.getElementById('expression');
+        const resultDisplay = document.getElementById('result');
+
+        // Sayfa yüklendiğinde oturum kontrolü
+        window.onload = function() {
+            const currentUser = sessionStorage.getItem('currentUser');
+            if (currentUser) {
+                showCalculator(currentUser);
+            }
+        };
+
+        // Kayıt Fonksiyonu
+        function register(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Şifre kontrolü
+            if (password !== passwordConfirm) {
+                errorDiv.textContent = 'Şifreler eşleşmiyor!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorDiv.textContent = 'Şifre en az 6 karakter olmalıdır!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Kullanıcı kontrolü
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            
+            if (users[email]) {
+                errorDiv.textContent = 'Bu e-posta adresi zaten kayıtlı!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Kullanıcı kaydet
+            users[email] = {
+                password: password,
+                createdAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            successDiv.textContent = 'Kayıt başarılı! Giriş yapabilirsiniz.';
+            successDiv.style.display = 'block';
+            
+            // Formu temizle
+            document.getElementById('regEmail').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regPasswordConfirm').value = '';
+            
+            // 2 saniye sonra giriş sayfasına yönlendir
+            setTimeout(() => {
+                showLogin();
+            }, 2000);
+        }
+
+        // Giriş Fonksiyonu
+        function login(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.style.display = 'none';
+            
+            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            
+            if (!users[email]) {
+                errorDiv.textContent = 'Bu e-posta adresi kayıtlı değil!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (users[email].password !== password) {
+                errorDiv.textContent = 'Şifre hatalı!';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Oturum başlat
+            sessionStorage.setItem('currentUser', email);
+            showCalculator(email);
+        }
+
+        // Çıkış Fonksiyonu
+        function logout() {
+            sessionStorage.removeItem('currentUser');
+            resetCalculator();
+            calculator.style.display = 'none';
+            showLogin();
+        }
+
+        // Görünüm Değiştirme
+        function showLogin() {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            calculator.style.display = 'none';
+            clearFormErrors();
+        }
+
+        function showRegister() {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            calculator.style.display = 'none';
+            clearFormErrors();
+        }
+
+        function showCalculator(email) {
+            registerForm.classList.add('hidden');
+            loginForm.classList.add('hidden');
+            calculator.style.display = 'block';
+            document.getElementById('currentUserEmail').textContent = email;
+        }
+
+        function clearFormErrors() {
+            document.querySelectorAll('.error-message, .success-message').forEach(el => {
+                el.style.display = 'none';
+            });
+        }
+
+        // Hesap Makinesi Fonksiyonları
+        function updateDisplay() {
+            resultDisplay.textContent = currentInput;
+            
+            if (previousInput && operation) {
+                const opSymbol = getOperatorSymbol(operation);
+                expressionDisplay.textContent = `${previousInput} ${opSymbol}`;
+            } else {
+                expressionDisplay.textContent = '';
+            }
+        }
+
+        function getOperatorSymbol(op) {
+            switch(op) {
+                case '+': return '+';
+                case '-': return '−';
+                case '*': return '×';
+                case '/': return '÷';
+                default: return op;
+            }
+        }
+
+        function appendNumber(number) {
+            if (shouldResetScreen) {
+                currentInput = number;
+                shouldResetScreen = false;
+            } else if (currentInput === '0') {
+                currentInput = number;
+            } else {
+                currentInput += number;
+            }
+            updateDisplay();
+        }
+
+        function appendDecimal() {
+            if (shouldResetScreen) {
+                currentInput = '0.';
+                shouldResetScreen = false;
+            } else if (!currentInput.includes('.')) {
+                currentInput += '.';
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(op) {
+            if (previousInput && operation && !shouldResetScreen) {
+                calculate();
+            }
+            
+            previousInput = currentInput;
+            operation = op;
+            shouldResetScreen = true;
+            updateDisplay();
+        }
+
+        function calculate() {
+            if (!operation || !previousInput) return;
+            
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            let result;
+            
+            switch(operation) {
+                case '+':
+                    result = prev + current;
+                    break;
+                case '-':
+                    result = prev - current;
+                    break;
+                case '*':
+                    result = prev * current;
+                    break;
+                case '/':
+                    if (current === 0) {
+                        currentInput = 'Hata';
+                        previousInput = '';
+                        operation = null;
+                        updateDisplay();
+                        return;
+                    }
+                    result = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            
+            // Sonucu formatla
+            if (Number.isInteger(result)) {
+                currentInput = result.toString();
+            } else {
+                currentInput = parseFloat(result.toFixed(10)).toString();
+            }
+            
+            // İşlem geçmişini göster
+            const opSymbol = getOperatorSymbol(operation);
+            expressionDisplay.textContent = `${previousInput} ${opSymbol} ${current} =`;
+            
+            previousInput = '';
+            operation = null;
+            shouldResetScreen = true;
+            
+            resultDisplay.textContent = currentInput;
+        }
+
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operation = null;
+            shouldResetScreen = false;
+            updateDisplay();
+        }
+
+        function backspace() {
+            if (currentInput.length === 1 || currentInput === 'Hata') {
+                currentInput = '0';
+            } else {
+                currentInput = currentInput.slice(0, -1);
+            }
+            updateDisplay();
+        }
+
+        function resetCalculator() {
+            currentInput = '0';
+            previousInput = '';
+            operation = null;
+            shouldResetScreen = false;
+            expressionDisplay.textContent = '';
+            resultDisplay.textContent = '0';
+        }
+
+        // Klavye Desteği
+        document.addEventListener('keydown', function(e) {
+            if (calculator.style.display === 'none') return;
+            
+            if (e.key >= '0' && e.key <= '9') {
+                appendNumber(e.key);
+            } else if (e.key === '.') {
+                appendDecimal();
+            } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+                appendOperator(e.key);
+            } else if (e.key === 'Enter' || e.key === '=') {
+                e.preventDefault();
+                calculate();
+            } else if (e.key === 'Backspace') {
+                backspace();
+            } else if (e.key === 'Escape') {
+                clearAll();
+            }
+        });
+    </script>
+</body>
+</html>
